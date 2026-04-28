@@ -8,14 +8,13 @@ int main(){
     hoja.insertarCelda(3,2,"peru");
     hoja.insertarCelda(1,1 , "porque");
     hoja.insertarCelda(15,15,"sera");
-
+    hoja.insertarCelda(101,101, "hola");
     hoja.insertarCelda(0,0, "algo");
     hoja.insertarCelda(-1,0,"diferente");
     hoja.insertarCelda(0,2,"cierto");
 
-
-    hoja.eliminarFila(0);
-    hoja.eliminarColumna(2);
+    
+    hoja.eliminarRango(-1,-1, 2,2 );
     hoja.printing();
 
     

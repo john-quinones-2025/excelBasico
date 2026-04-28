@@ -4,7 +4,7 @@
 
 void HojaCalculo::insertarCelda(int f, int c, string valor) {
     if (f < 0 || f >= cabecerasFilas.size() || c < 0 || c >= cabecerasColumnas.size()) {
-        cout<< "valor no admitido"<<endl;
+        
         return;
     }
 
@@ -196,6 +196,36 @@ void HojaCalculo::eliminarColumna(int c) {
         
         eliminarCelda(filaActual, c); 
         actual = temp;
+    }
+}
+
+
+void HojaCalculo::eliminarRango(int fInicio, int cInicio, int fFin, int cFin) {
+
+
+    // si se pasa hacia atras de la fila 0, lo ponemos en 0
+    if (fInicio < 0) fInicio = 0;
+    //si se pasa de la capaciad maxima de la fila lo ponemos en la maxima que se puede
+    if (fFin >= cabecerasFilas.size()) fFin = cabecerasFilas.size() - 1;
+
+    //recorremos todas las filas en el rango
+    for (int i = fInicio; i <= fFin; ++i) {
+        // agarramos la cabecera de la fila 
+        Celda* actual = cabecerasFilas[i];
+        
+        // recorremos la fila utilizando un auxiliar para eliminando en el camino
+        while (actual != nullptr && actual->columna <= cFin) {
+            // guardamos antes de eliminar el actual
+            Celda* siguienteEnFila = actual->sigEnFila;
+            
+            // si esta en el rango dentro del rango de columnas, eliminamos
+            if (actual->columna >= cInicio) {
+                //eliminamos 
+                eliminarCelda(i, actual->columna);
+            }
+            //seguimos con el siguiente en la fila
+            actual = siguienteEnFila;
+        }
     }
 }
 

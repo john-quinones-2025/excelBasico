@@ -27,7 +27,7 @@ public:
     void modificarCelda(int f, int c, string valor);
     void eliminarFila(int f);
     void eliminarColumna(int c);
-    void eliminarRango(int, int, int , int);
+    void eliminarRango(int fInicio, int cInicio, int fFin, int cFin);
     void printing();
     
     
