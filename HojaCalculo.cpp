@@ -154,3 +154,49 @@ void HojaCalculo::printing(){
     }
 
 }
+
+//eliminando filas
+void HojaCalculo::eliminarFila(int f) {
+
+    // caso de la fila este vacia, salimos
+    if (cabecerasFilas[f] == nullptr) return; 
+
+    //agarramos la cabecera de la fila
+    Celda* actual = cabecerasFilas[f];
+
+    // hacer el bucle hasta que actual apunte a un null.
+    // utiliza temp para ubicar el indice del siguiente
+    //eliminas rapido con eliminarCelda, ya que es el primer elemento de la lista
+    //asi con todos, todos tienen la primera posicion cuando se eliminan.
+
+    while (actual != nullptr) {
+
+        int colActual = actual->columna;
+
+        Celda* temp = actual->sigEnFila;
+
+        eliminarCelda(f, colActual); 
+        actual = temp;
+    }
+}
+
+
+// analogamente se eliminan columnas.
+
+void HojaCalculo::eliminarColumna(int c) {
+
+    if (cabecerasColumnas[c] == nullptr) return; 
+
+    Celda* actual = cabecerasColumnas[c];
+
+    while (actual != nullptr) {
+        int filaActual = actual->fila;
+
+        Celda* temp = actual->sigEnColumna;
+        
+        eliminarCelda(filaActual, c); 
+        actual = temp;
+    }
+}
+
+

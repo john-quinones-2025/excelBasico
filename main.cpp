@@ -13,6 +13,9 @@ int main(){
     hoja.insertarCelda(-1,0,"diferente");
     hoja.insertarCelda(0,2,"cierto");
 
+
+    hoja.eliminarFila(0);
+    hoja.eliminarColumna(2);
     hoja.printing();
 
     

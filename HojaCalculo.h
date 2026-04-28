@@ -20,11 +20,14 @@ public:
         cabecerasColumnas.assign(maxCols, nullptr);
     }
 
-    // funciones a implementar ......
+    // funciones a implementar 
     void insertarCelda(int f, int c, string valor);
     string consultarCelda(int f, int c);
     void eliminarCelda(int f, int c);
     void modificarCelda(int f, int c, string valor);
+    void eliminarFila(int f);
+    void eliminarColumna(int c);
+    void eliminarRango(int, int, int , int);
     void printing();
     
     
