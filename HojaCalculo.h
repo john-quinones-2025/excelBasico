@@ -3,6 +3,7 @@
 #include "Celda.h"
 #include <vector>
 #include <iostream>
+#include <limits>
 
 using namespace std;
 
@@ -12,6 +13,16 @@ private:
     // Arreglos de punteros para las cabeceras (headers)
     vector<Celda*> cabecerasFilas;
     vector<Celda*> cabecerasColumnas;
+
+
+    bool esNumero(const string& s) {
+        try {
+            stod(s);
+            return true;
+        } catch (...) {
+            return false;
+        }
+    }
 
 public:
     // Constructor
@@ -28,6 +39,9 @@ public:
     void eliminarFila(int f);
     void eliminarColumna(int c);
     void eliminarRango(int fInicio, int cInicio, int fFin, int cFin);
+    double sumaRango(int fInicio, int cInicio, int fFin, int cFin);
+    double promedioRango(int fInicio, int cInicio, int fFin, int cFin);
+    double maximoRango(int fInicio, int cInicio, int fFin, int cFin);
     void printing();
     
     

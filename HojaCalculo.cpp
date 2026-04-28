@@ -230,3 +230,123 @@ void HojaCalculo::eliminarRango(int fInicio, int cInicio, int fFin, int cFin) {
 }
 
 
+double HojaCalculo::sumaRango(int fInicio, int cInicio, int fFin, int cFin){
+
+    //acumulador de suma
+    double suma = 0.0;
+
+    // si se pasa hacia atras de la fila 0, lo ponemos en 0
+    if (fInicio < 0) fInicio = 0;
+    //si se pasa de la capaciad maxima de la fila lo ponemos en la maxima que se puede
+    if (fFin >= cabecerasFilas.size()) fFin = cabecerasFilas.size() - 1;
+
+    //bucle de fila incio hasta el final 
+    for(int i = fInicio; i<= fFin; ++i){
+
+        //agarramos la cabeza de la fila
+        Celda* actual = cabecerasFilas[i];
+
+        while(actual != nullptr && actual->columna<= cFin){
+
+            if(actual->columna >= cInicio && esNumero(actual->valor)){
+                suma+= stod(actual->valor);
+
+            }
+
+            actual = actual->sigEnFila;
+        }
+    }
+
+    return suma;
+
+
+
+}
+
+
+double HojaCalculo::promedioRango(int fInicio, int cInicio, int fFin, int cFin){
+
+    //acumulador de suma
+    double suma = 0.0;
+
+    //ponemos un contador para los validos, la demas logica es igual
+    int contador= 0;
+    //bucle de fila incio hasta el final 
+
+    // si se pasa hacia atras de la fila 0, lo ponemos en 0
+    if (fInicio < 0) fInicio = 0;
+    //si se pasa de la capaciad maxima de la fila lo ponemos en la maxima que se puede
+    if (fFin >= cabecerasFilas.size()) fFin = cabecerasFilas.size() - 1;
+
+
+    for(int i = fInicio; i<= fFin; ++i){
+
+        //agarramos la cabeza de la fila
+        Celda* actual = cabecerasFilas[i];
+
+        while(actual != nullptr && actual->columna<= cFin){
+
+            //anadirmos la condicional de esNumero para agarrar solo numeros en la suma
+            if(actual->columna >= cInicio && esNumero(actual->valor)){
+
+                // convretirmos string a double
+                suma+= stod(actual->valor);
+                contador++;
+
+            }
+
+            actual = actual->sigEnFila;
+        }
+    }
+
+    //retornamos
+
+    return (contador ==0) ? 0: (suma/ contador); //para evitar dividir entre 0
+
+
+
+}
+
+double HojaCalculo::maximoRango(int fInicio, int cInicio, int fFin, int cFin) {
+    double maximo = -numeric_limits<double>::infinity();
+    bool encontrado = false;
+
+    // si se pasa hacia atras de la fila 0, lo ponemos en 0
+    if (fInicio < 0) fInicio = 0;
+    //si se pasa de la capaciad maxima de la fila lo ponemos en la maxima que se puede
+    if (fFin >= cabecerasFilas.size()) fFin = cabecerasFilas.size() - 1;
+
+
+    // bucle para las filas
+    for (int i = fInicio; i <= fFin; ++i) {
+
+        //agarramos la cabecera
+        Celda* actual = cabecerasFilas[i];
+        //bucle para vez que tenga cabeza y sea menor que la columna
+        while (actual != nullptr && actual->columna <= cFin) {
+            //verificar que sea numero y que sea mayor que la fila inicio
+
+            if (actual->columna >= cInicio && esNumero(actual->valor)) {
+                double val = stod(actual->valor);
+
+                //comparamos con el maximo
+                if (val > maximo) maximo = val;
+                //si existe cambiamos la bandera a encontrado
+                encontrado = true;
+            }
+
+            //continuas con el del costado hasta que llegue a null y cambies a la otra fila
+            actual = actual->sigEnFila;
+        }
+    }
+
+    // si encuentras un valor entonces devuelves maximo, de lo contrario no hay maximo y devuelves 0
+    return encontrado ? maximo : 0; 
+}
+
+
+
+
+
+
+
