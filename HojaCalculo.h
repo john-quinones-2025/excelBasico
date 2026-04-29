@@ -31,6 +31,8 @@ public:
         cabecerasColumnas.assign(maxCols, nullptr);
     }
 
+    ~HojaCalculo();
+
     // funciones a implementar 
     void insertarCelda(int f, int c, string valor);
     string consultarCelda(int f, int c);
@@ -42,6 +44,7 @@ public:
     double sumaRango(int fInicio, int cInicio, int fFin, int cFin);
     double promedioRango(int fInicio, int cInicio, int fFin, int cFin);
     double maximoRango(int fInicio, int cInicio, int fFin, int cFin);
+    double minimoRango(int fInicio, int cInicio, int fFin, int cFin);
     void printing();
     
     

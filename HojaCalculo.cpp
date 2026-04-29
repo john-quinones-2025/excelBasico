@@ -2,6 +2,34 @@
 
 
 
+//destructor para evitar fugas de memoria 
+HojaCalculo::~HojaCalculo() {
+    //recorremos la cantidad de cabezas en fila
+    for (int i = 0; i < cabecerasFilas.size(); ++i) {
+
+        //agararmos la cabeza de la fila
+        Celda* actual = cabecerasFilas[i];
+
+        //recorremos hasta chocarnos con el nullptr
+        while (actual != nullptr) {
+
+            //temporal para borrar despues
+            Celda* aBorrar = actual;
+
+            //apuntamos el actual al siguiente
+            actual = actual->sigEnFila;
+
+            //borramos la celda y asi sucesivamente hasta borrar todas la celdas
+            delete aBorrar;
+        }
+    }
+
+    //luego, vaciamos las cabezas
+    cabecerasFilas.clear();
+    cabecerasColumnas.clear();
+}
+
+
 void HojaCalculo::insertarCelda(int f, int c, string valor) {
     if (f < 0 || f >= cabecerasFilas.size() || c < 0 || c >= cabecerasColumnas.size()) {
         
@@ -342,6 +370,47 @@ double HojaCalculo::maximoRango(int fInicio, int cInicio, int fFin, int cFin) {
 
     // si encuentras un valor entonces devuelves maximo, de lo contrario no hay maximo y devuelves 0
     return encontrado ? maximo : 0; 
+}
+
+
+// analogamente calculamos el minimo, reutilizamos el codigo anteorios y hacemos algunos cambios
+double HojaCalculo::minimoRango(int fInicio, int cInicio, int fFin, int cFin) {
+ 
+    
+    double minimo = numeric_limits<double>::infinity();
+    bool encontrado = false;
+
+    // si se pasa hacia atras de la fila 0, lo ponemos en 0
+    if (fInicio < 0) fInicio = 0;
+    //si se pasa de la capaciad maxima de la fila lo ponemos en la maxima que se puede
+    if (fFin >= cabecerasFilas.size()) fFin = cabecerasFilas.size() - 1;
+
+
+    // bucle para las filas
+    for (int i = fInicio; i <= fFin; ++i) {
+
+        //agarramos la cabecera
+        Celda* actual = cabecerasFilas[i];
+        //bucle para vez que tenga cabeza y sea menor que la columna
+        while (actual != nullptr && actual->columna <= cFin) {
+            //verificar que sea numero y que mayor que la fila inicio
+
+            if (actual->columna >= cInicio && esNumero(actual->valor)) {
+                double val = stod(actual->valor);
+
+                //comparamos con el minimo
+                if (val < minimo) minimo = val;
+                //si existe cambiamos la bandera a encontrado
+                encontrado = true;
+            }
+
+            //continuas con el del costado hasta que llegue a null y cambies a la otra fila
+            actual = actual->sigEnFila;
+        }
+    }
+
+    // si encuentras un valor entonces devuelves minimo, de lo contrario no hay minimo y devuelves 0
+    return encontrado ? minimo : 0; 
 }
 
 
