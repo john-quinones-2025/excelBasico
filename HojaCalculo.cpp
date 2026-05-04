@@ -1,6 +1,31 @@
 #include "HojaCalculo.h"
 
 
+//verificacion de valor de celda es numero
+bool HojaCalculo::esNumero(const string& s){
+
+    if (s.empty()) return false;
+        int digitos = 0;
+        int puntos = 0;
+
+        for (char c : s) {
+            if (isspace(c)) continue; // ignoramos espacios y saltos de linea
+            if (c == '-' || c == '+') continue; // permitimos signos
+            if (c == '.' || c == ',') {
+                puntos++;
+                continue;
+            }
+            if (isdigit(c)) {
+                digitos++;
+                continue;
+            }
+            // si encuentra alguna letra o simbolo retorna false
+            return false;
+        }
+        // es un numero valido si al menos tiene un digito y a lo mas un punto.
+        return (digitos > 0 && puntos <= 1);
+
+}
 
 //destructor para evitar fugas de memoria 
 HojaCalculo::~HojaCalculo() {
@@ -91,7 +116,7 @@ void HojaCalculo::insertarCelda(int f, int c, string valor) {
 
 string HojaCalculo::consultarCelda(int f, int c) {
 
-
+    if (f < 0 || f >= cabecerasFilas.size() || c < 0 || c >= cabecerasColumnas.size()) return "";
     // vas a la cabecera de f
     Celda* actual = cabecerasFilas[f];
 
@@ -415,6 +440,166 @@ double HojaCalculo::minimoRango(int fInicio, int cInicio, int fFin, int cFin) {
 
 
 
+// traduce el nombre de una celda a enteros filas y columnas, si todo sale bien, devuelve true.
+bool HojaCalculo::decodificarReferencia(const string& ref, int& fila, int& columna) {
+    
+    
+    //si esta vacio o no empieza ocn letra es retorna false
+    if (ref.empty() || !isalpha(ref[0])) return false;
+
+
+    
+    int i = 0;
+    columna = 0;
+    
+
+    //convierte el indice de letras consecutivas hasta que encuentre algo que no es letra
+    while (i < ref.length() && isalpha(ref[i])) {
+        columna = columna * 26 + (toupper(ref[i]) - 'A' + 1);
+        i++;
+    }
+    columna -= 1; // para que sea valido con los indice de la matriz dispersa. 
+
+    // si todos son letras entonces es invalido
+    if (i == ref.length()) return false;
+
+    // convierte el resto en un string
+    string numPart = ref.substr(i);
+    try {
+        size_t pos;
+        fila = stoi(numPart, &pos) - 1; // si se convierte todo se resta -1
+
+        // si no se convierte todo se retorna false
+        if (pos != numPart.length()) return false; // hay basura despues del numero, retorna false
+    } catch (...) {
+        return false;
+    }
+    return true;
+}
+
+
+
+
+//encargado de ver el valor de una parte de formula. celda o numerico.
+double HojaCalculo::evaluarOperando(const string& op, bool& ok) {
+    ok = true;
+
+    
+    //primer caso: es un numero puro, esa el caso retornamos el valor numerico
+    try {
+        size_t pos;
+        double val = stod(op, &pos);
+        if (pos == op.length()) return val; // Es un número válido
+    } catch (...) {}
+
+    //segundo caso: es referencia a una celda
+    int f, c;
+
+    //si tiene una codificacion de celda, consultamos celda
+    if (decodificarReferencia(op, f, c)) {
+        string valorCelda = consultarCelda(f, c); // Busca en la matriz
+
+        
+        // si valor celda tiene un error , se propaga el error, retorna valor 0 como si fuese una celda vacia o cualqiuer string
+        if (valorCelda == "ERROR NAME" || valorCelda == "ERROR DIV") {
+            ok = false; return 0;
+        }
+
+        // si esta vacia devolvemos cero
+        if (valorCelda.empty()) {
+            return 0; // ok sigue siendo true 
+        }
+        
+
+        // accede al valor y lo intenta convertir a su valor numerico, si se peude devuelve el valor 
+        //en double, de lo contrario es cualquier otro string y sale de la excepcion
+        try {
+            size_t pos;
+            double val = stod(valorCelda, &pos);
+            if (pos == valorCelda.length()) return val;
+        } catch (...) {}
+    }
+
+    // Si no fue numero ni referencia valida
+    ok = false;
+    return 0;
+}
+
+string HojaCalculo::procesarFormula(string input) {
+    
+    // si es vacio o el input es diferente de = entonces es texto normal
+    if (input.empty() || input[0] != '=') {
+        return input;
+    }
+
+
+    // de lo contrario es formula y borramos los espacios en blanco
+    string formula = "";
+    for (char c : input) {
+        if (c != ' ') formula += c;
+    }
+    formula = formula.substr(1); // Quitamos el '='
+
+
+
+    // buscamos el operador de la formula
+    size_t posOp = string::npos;
+    char operador = '\0';
+    for (size_t i = 0; i < formula.length(); i++) {
+        if (formula[i] == '+' || formula[i] == '-' || formula[i] == '*' || formula[i] == '/') {
+            if (i > 0) { // ignoramos que el operador se encuentre la inicio para que no se confunda con numero negativo "-5".
+                posOp = i;
+                operador = formula[i];
+                break;
+            }
+        }
+    }
+
+    // lamba limpiador de ceros
+    auto limpiarCeros = [](double val) {
+        string str = to_string(val);
+        str.erase(str.find_last_not_of('0') + 1, std::string::npos);
+        if (str.back() == '.') str.pop_back();
+        return str;
+    };
+
+    // si no existe un operador entonces es una celda o numero, retornamos el valor
+    // segun determine la bandera ok.
+    if (posOp == string::npos) {
+        bool ok;
+        double val = evaluarOperando(formula, ok);
+        if (!ok) return "ERROR NAME";
+        return limpiarCeros(val);
+    }
+
+    // si llegamos hasta aca, existe operador, separamos en dos partes, evaluamos los operadores
+    //con sus banderas, si alguna bandera fallo se retorna ERROR NAME, de lo contrario se retorna
+    // el resutlado de la operacion. en el caso de division entre 0 se retorna ERROR DIV.
+    string op1Str = formula.substr(0, posOp);
+    string op2Str = formula.substr(posOp + 1);
+
+    bool ok1, ok2;
+    double val1 = evaluarOperando(op1Str, ok1);
+    double val2 = evaluarOperando(op2Str, ok2);
+
+    
+    if (!ok1 || !ok2) return "ERROR NAME";
+
+    
+    double resultado = 0;
+    
+    switch (operador) {
+    case '+': resultado = val1 + val2; break;
+    case '-': resultado = val1 - val2; break;
+    case '*': resultado = val1 * val2; break;
+    case '/':
+        if (val2 == 0) return "ERROR DIV"; 
+        resultado = val1 / val2;
+        break;
+    }
+
+    return limpiarCeros(resultado);
+}
 
 
 

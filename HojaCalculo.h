@@ -10,22 +10,18 @@ using namespace std;
 
 class HojaCalculo {
 private:
-    // Arreglos de punteros para las cabeceras (headers)
+    // vectores de cabezas
     vector<Celda*> cabecerasFilas;
     vector<Celda*> cabecerasColumnas;
 
 
-    bool esNumero(const string& s) {
-        try {
-            stod(s);
-            return true;
-        } catch (...) {
-            return false;
-        }
-    }
+    
+    bool esNumero(const string& s);
+    bool decodificarReferencia(const string& ref, int& fila, int& columna);
+    double evaluarOperando(const string& op, bool& ok);
 
 public:
-    // Constructor
+    
     HojaCalculo(int maxFilas = 1000, int maxCols = 1000) {
         cabecerasFilas.assign(maxFilas, nullptr);
         cabecerasColumnas.assign(maxCols, nullptr);
@@ -33,7 +29,7 @@ public:
 
     ~HojaCalculo();
 
-    // funciones a implementar 
+    
     void insertarCelda(int f, int c, string valor);
     string consultarCelda(int f, int c);
     void eliminarCelda(int f, int c);
@@ -45,6 +41,9 @@ public:
     double promedioRango(int fInicio, int cInicio, int fFin, int cFin);
     double maximoRango(int fInicio, int cInicio, int fFin, int cFin);
     double minimoRango(int fInicio, int cInicio, int fFin, int cFin);
+    string procesarFormula(string input);
+    
+
     void printing();
     
     
