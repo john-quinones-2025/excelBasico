@@ -211,26 +211,37 @@ void HojaCalculo::printing(){
 //eliminando filas
 void HojaCalculo::eliminarFila(int f) {
 
-    // caso de la fila este vacia, salimos
-    if (cabecerasFilas[f] == nullptr) return; 
+    // caso borde de fila, sale
+    if (f < 0 || f >= cabecerasFilas.size() || cabecerasFilas[f] == nullptr) return;
 
-    //agarramos la cabecera de la fila
     Celda* actual = cabecerasFilas[f];
 
-    // hacer el bucle hasta que actual apunte a un null.
-    // utiliza temp para ubicar el indice del siguiente
-    //eliminas rapido con eliminarCelda, ya que es el primer elemento de la lista
-    //asi con todos, todos tienen la primera posicion cuando se eliminan.
-
+    //recorremos fila hasta el nulltpr
     while (actual != nullptr) {
+        int c = actual->columna;
 
-        int colActual = actual->columna;
+        // bajamos por la columna para descocer en columna y volver a cocer.
+        Celda* actualCol = cabecerasColumnas[c];
+        Celda* antCol = nullptr;
 
-        Celda* temp = actual->sigEnFila;
+        while (actualCol != nullptr && actualCol->fila < f) {
+            antCol = actualCol;
+            actualCol = actualCol->sigEnColumna;
+        }
 
-        eliminarCelda(f, colActual); 
-        actual = temp;
+        // descocemos y cocemos
+        if (antCol == nullptr) cabecerasColumnas[c] = actual->sigEnColumna;
+        else antCol->sigEnColumna = actual->sigEnColumna;
+
+        // buffer para borra la celda fila y seguir con el siguiente en la fila para borrar
+        Celda* aBorrar = actual;
+        actual = actual->sigEnFila;
+        
+        delete aBorrar; 
     }
+    
+    //  cuando se borro todo se actualiza el header a nullptr
+    cabecerasFilas[f] = nullptr;
 }
 
 
@@ -238,46 +249,85 @@ void HojaCalculo::eliminarFila(int f) {
 
 void HojaCalculo::eliminarColumna(int c) {
 
-    if (cabecerasColumnas[c] == nullptr) return; 
+    
+    if (c < 0 || c >= cabecerasColumnas.size() || cabecerasColumnas[c] == nullptr) return;
 
     Celda* actual = cabecerasColumnas[c];
 
     while (actual != nullptr) {
-        int filaActual = actual->fila;
+        int f = actual->fila;
 
-        Celda* temp = actual->sigEnColumna;
+        Celda* actualFila = cabecerasFilas[f];
+        Celda* antFila = nullptr;
+
+        while (actualFila != nullptr && actualFila->columna < c) {
+            antFila = actualFila;
+            actualFila = actualFila->sigEnFila;
+        }
+
         
-        eliminarCelda(filaActual, c); 
-        actual = temp;
+        if (antFila == nullptr) cabecerasFilas[f] = actual->sigEnFila;
+        else antFila->sigEnFila = actual->sigEnFila;
+
+        
+        Celda* aBorrar = actual;
+        actual = actual->sigEnColumna;
+        
+        delete aBorrar; 
     }
+    
+    cabecerasColumnas[c] = nullptr;
 }
 
 
 void HojaCalculo::eliminarRango(int fInicio, int cInicio, int fFin, int cFin) {
 
 
-    // si se pasa hacia atras de la fila 0, lo ponemos en 0
+    // casos borde
     if (fInicio < 0) fInicio = 0;
-    //si se pasa de la capaciad maxima de la fila lo ponemos en la maxima que se puede
     if (fFin >= cabecerasFilas.size()) fFin = cabecerasFilas.size() - 1;
 
-    //recorremos todas las filas en el rango
+    //recorrer entre las filas
     for (int i = fInicio; i <= fFin; ++i) {
-        // agarramos la cabecera de la fila 
         Celda* actual = cabecerasFilas[i];
-        
-        // recorremos la fila utilizando un auxiliar para eliminando en el camino
+        Celda* antFila = nullptr; 
+
+        //hasta las columnas maxima o se acabe se recorre
         while (actual != nullptr && actual->columna <= cFin) {
-            // guardamos antes de eliminar el actual
-            Celda* siguienteEnFila = actual->sigEnFila;
             
-            // si esta en el rango dentro del rango de columnas, eliminamos
+            
+            //si esta en la zona de borrado
             if (actual->columna >= cInicio) {
-                //eliminamos 
-                eliminarCelda(i, actual->columna);
+                
+                // descoces y coces la fila
+                if (antFila == nullptr) cabecerasFilas[i] = actual->sigEnFila;
+                else antFila->sigEnFila = actual->sigEnFila;
+
+                //buscas , descoces y coces la columna
+                int c = actual->columna;
+                Celda* actualCol = cabecerasColumnas[c];
+                Celda* antCol = nullptr;
+                
+                while (actualCol != nullptr && actualCol->fila < i) {
+                    antCol = actualCol;
+                    actualCol = actualCol->sigEnColumna;
+                }
+                
+                //descoces y coces
+                if (antCol == nullptr) cabecerasColumnas[c] = actual->sigEnColumna;
+                else antCol->sigEnColumna = actual->sigEnColumna;
+
+                // borras el nodo y sigues con el siguiente en fila
+                Celda* aBorrar = actual;
+                actual = actual->sigEnFila; // aqui movemos antFila, porque acabamos de borrar el nodo del medio
+                delete aBorrar;
+                
+            } else {
+                
+                // aqui si movemos antFila, si no esta en nuestra zona de borrado la celda
+                antFila = actual;
+                actual = actual->sigEnFila;
             }
-            //seguimos con el siguiente en la fila
-            actual = siguienteEnFila;
         }
     }
 }
